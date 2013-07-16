@@ -117,6 +117,12 @@ gxp.plugins.WMSSource = Ext.extend(gxp.plugins.LayerSource, {
     
     /** api: ptype = gxp_wmssource */
     ptype: "gxp_wmssource",
+
+    /** api: config[skipPing]
+     *  ``Boolean`` When dealing with a lazy source, should we skip the ping
+     *  request to see if the WMS is alive? Defaults to false.
+     */
+    skipPing: false,
     
     /** api: config[url]
      *  ``String`` WMS service URL for this source
@@ -362,27 +368,32 @@ gxp.plugins.WMSSource = Ext.extend(gxp.plugins.LayerSource, {
         });
         if (lazy) {
             this.lazy = true;
-            // ping server of lazy source with an incomplete request, to see if
-            // it is available
-            Ext.Ajax.request({
-                method: "GET",
-                url: this.url,
-                params: {SERVICE: "WMS"},
-                callback: function(options, success, response) {
-                    var status = response.status;
-                    // responseText should not be empty (OGCException)
-                    if (status >= 200 && status < 403 && response.responseText) {
-                        this.ready = true;
-                        this.fireEvent("ready", this);
-                    } else {
-                        this.fireEvent("failure", this,
-                            "Layer source not available.",
-                            "Unable to contact WMS service."
-                        );
-                    }
-                },
-                scope: this
-            });
+            if (this.skipPing !== true) {
+                // ping server of lazy source with an incomplete request, to see if
+                // it is available
+                Ext.Ajax.request({
+                    method: "GET",
+                    url: this.url,
+                    params: {SERVICE: "WMS"},
+                    callback: function(options, success, response) {
+                        var status = response.status;
+                        // responseText should not be empty (OGCException)
+                        if (status >= 200 && status < 403 && response.responseText) {
+                            this.ready = true;
+                            this.fireEvent("ready", this);
+                        } else {
+                            this.fireEvent("failure", this,
+                                "Layer source not available.",
+                                "Unable to contact WMS service."
+                            );
+                        }
+                    },
+                    scope: this
+                });
+            } else {
+                this.ready = true;
+                this.fireEvent("ready", this);
+            }
         }
     },
     
@@ -440,6 +451,7 @@ gxp.plugins.WMSSource = Ext.extend(gxp.plugins.LayerSource, {
                 layers: config.name,
                 transparent: "transparent" in config ? config.transparent : true,
                 cql_filter: config.cql_filter,
+                viewparams: config.viewparams,
                 format: config.format
             }, {
                 projection: srs
@@ -512,7 +524,8 @@ gxp.plugins.WMSSource = Ext.extend(gxp.plugins.LayerSource, {
                 STYLES: config.styles,
                 FORMAT: config.format,
                 TRANSPARENT: config.transparent,
-                CQL_FILTER: config.cql_filter
+                CQL_FILTER: config.cql_filter,
+                VIEWPARAMS: config.viewparams
             });
             
             var singleTile = false;
@@ -864,6 +877,7 @@ gxp.plugins.WMSSource = Ext.extend(gxp.plugins.LayerSource, {
             styles: params.STYLES,
             transparent: params.TRANSPARENT,
             cql_filter: params.CQL_FILTER,
+            viewparams: params.VIEWPARAMS,
             minscale: options.minScale,
             maxscale: options.maxScale,
             infoFormat: record.get("infoFormat")

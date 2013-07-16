@@ -169,6 +169,7 @@ var app = new gxp.Viewer({
             styles: "point,heatmap",
             title: "Geonames",
             tiled: false,
+            transitionEffect: null,
             viewparams: "word:",
             opacity: 0.6,
             bbox: [-13919915.285383, 1871624.6816921, -7022237.8538889, 8681246.6566139]

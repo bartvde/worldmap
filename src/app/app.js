@@ -42,17 +42,14 @@ var app = new gxp.Viewer({
             items: ["mymap"]
         }, {
             xtype: "panel",
-            layout: "fit",
             region: "west",
+            padding: "10",
+            margin: "5",
             title: false,
             width: 250,
-            height: "auto",
             layout: "vbox",
             layoutConfig: {
-                align: "stretch",
-                padding: "10",
-                defaultMargins: "5 5",
-                flex: 1
+                align: "stretch"
              },
              items: [{
                  xtype: "box",
